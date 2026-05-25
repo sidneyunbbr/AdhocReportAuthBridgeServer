@@ -1,0 +1,23 @@
+{
+  "name": "adhoc-report-auth-bridge-server",
+  "version": "1.0.0",
+  "description": "Secure external authentication bridge with ECDH and SQLite.",
+  "type": "module",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "db:init": "node data/migrate.js",
+    "db:seed": "node data/seed.js",
+    "db:reset": "node data/reset.js",
+    "test": "node --test --test-concurrency=1 server/test/*.test.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.10.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

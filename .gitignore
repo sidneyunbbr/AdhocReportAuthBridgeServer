@@ -1,0 +1,49 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Build/coverage
+dist/
+build/
+coverage/
+.nyc_output/
+
+# Cache/temp
+.tmp/
+temp/
+.cache/
+
+# SQLite / local databases
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Logs
+logs/
+*.log
+
+# Optional: local IDE settings
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json

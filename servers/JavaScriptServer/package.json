@@ -8,7 +8,9 @@
   },
   "scripts": {
     "dev": "nodemon server/src/index.js",
-    "start": "node server/src/index.js"
+    "start": "node server/src/index.js",
+    "reseed-data": "node scripts/reseed-shared-data.js",
+    "test:conformance": "node --test server/tests/**/*.conformance.test.js"
   },
   "keywords": [
     "adhocreport",

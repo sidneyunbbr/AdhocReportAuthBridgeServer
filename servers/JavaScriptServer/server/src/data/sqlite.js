@@ -28,6 +28,7 @@ function isResetOnStartEnabled() {
   return String(process.env.AUTHBRIDGE_RESET_SHARED_DATA_ON_START || 'false').toLowerCase() === 'true';
 }
 
+// Central schema used by replayRepository and secureValidationService user lookup.
 function createSchema() {
   db.exec(`
     CREATE TABLE IF NOT EXISTS replay_requests (
@@ -54,6 +55,7 @@ function createSchema() {
   `);
 }
 
+// Optional destructive reset used by reseed script and repeatable local test scenarios.
 function resetDataIfRequested() {
   if (!isResetOnStartEnabled()) {
     return;
@@ -65,6 +67,7 @@ function resetDataIfRequested() {
   `);
 }
 
+// Seeds sample users expected by docs/examples/conformance tests.
 function seedExternalUsersIfEmpty() {
   const countRow = db.prepare('SELECT COUNT(1) AS count FROM external_auth_users;').get();
   if ((countRow?.count ?? 0) > 0) {
@@ -205,10 +208,12 @@ export function cleanupExpiredReplays(referenceUtcIso) {
   return cleanupReplayStatement.run(referenceUtcIso);
 }
 
+// Used by secureValidationService when decrypted payload provides username.
 export function findExternalAuthUserByUsername(username) {
   return selectUserByUsernameStatement.get(username) ?? null;
 }
 
+// Used by secureValidationService when decrypted payload provides externalUserId.
 export function findExternalAuthUserByExternalId(externalUserId) {
   return selectUserByExternalIdStatement.get(externalUserId) ?? null;
 }

@@ -81,15 +81,19 @@ export function getErrorDefinition(key) {
   return ERROR_MAP[key] || ERROR_MAP.malformedEnvelope;
 }
 
-// Sends deterministic HTTP error payloads aligned with contract categories.
-export function sendError(res, key, correlationId, details) {
-  const error = getErrorDefinition(key);
-
-  return res.status(error.status).json({
+// Produces normalized error payload so sendError only handles transport status mapping.
+function buildErrorBody(error, correlationId, details) {
+  return {
 	isValid: false,
 	errorCode: error.errorCode,
 	message: error.message,
 	correlationId: correlationId || null,
 	details: details || null
-  });
+  };
+}
+
+// Sends deterministic HTTP error payloads aligned with contract categories.
+export function sendError(res, key, correlationId, details) {
+  const error = getErrorDefinition(key);
+  return res.status(error.status).json(buildErrorBody(error, correlationId, details));
 }

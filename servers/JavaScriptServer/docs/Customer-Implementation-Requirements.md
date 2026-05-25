@@ -68,14 +68,15 @@ The server should return deterministic transport errors for pre-crypto checks, f
 - `408` expired request window
 - `409` replay detected
 
-## 5) Cryptographic phase (next mandatory layer)
+## 5) Cryptographic phase (mandatory)
 After prechecks pass, the server must execute cryptographic validation and processing:
 - signature verification
 - key agreement/derivation
 - decrypt request payload
 - encrypt response payload
+- sign secure response envelope
 
-This JavaScript reference is being implemented in phases. Pre-crypto validations and replay persistence are already active.
+This JavaScript reference now includes a full secure response pipeline with conformance tests and example client flow.
 
 ## Quick local setup for customer tests (PowerShell)
 
@@ -91,6 +92,7 @@ $env:AUTHBRIDGE_SECURE_PROTOCOL_VERSION="2.0"
 
 # Optional reset/reseed for local test data
 $env:AUTHBRIDGE_RESET_SHARED_DATA_ON_START="true"
+npm run reseed-data
 
 npm run start
 ```
@@ -100,6 +102,18 @@ Smoke check from another terminal:
 ```powershell
 Invoke-WebRequest -Uri "http://localhost:3000/api/external-auth/health" -Method Get
 Invoke-WebRequest -Uri "http://localhost:3000/api/external-auth/keys" -Method Get
+```
+
+Run the secure round-trip example client:
+
+```powershell
+node examples/secure-roundtrip-client.js
+```
+
+Run conformance tests:
+
+```powershell
+npm run test:conformance
 ```
 
 Important:

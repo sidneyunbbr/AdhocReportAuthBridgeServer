@@ -20,12 +20,12 @@ router.get('/health', (req, res) => {
   });
 });
 
-// Publishes active key metadata. Key lifecycle logic will be expanded in next F1 slices.
+// Publishes active key metadata consumed by clients before building signed/encrypted requests.
 router.get('/keys', (req, res) => {
   return res.status(200).json(getKeyDiscoveryPayload());
 });
 
-// Validates request envelope preconditions before cryptographic processing.
+// Route chain: validateSecureRequest (transport/replay) -> processSecureValidation (crypto+business).
 router.post('/validate-secure', (req, res) => {
   const validation = validateSecureRequest(req);
 

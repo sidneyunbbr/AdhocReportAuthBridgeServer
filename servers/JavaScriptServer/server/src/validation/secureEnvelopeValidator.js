@@ -35,6 +35,22 @@ function buildResult(ok, errorKey, details, context) {
   };
 }
 
+// Produces standardized failure result preserving correlation id in one place.
+function fail(correlationId, errorKey, details) {
+  return buildResult(false, errorKey, details, {
+	correlationId
+  });
+}
+
+// Produces standardized success result for downstream secure processing.
+function success(correlationId, envelope, protocolVersion) {
+  return buildResult(true, null, null, {
+	correlationId,
+	envelope,
+	protocolVersion
+  });
+}
+
 // Validates transport + envelope + freshness + replay preconditions for secure requests.
 export function validateSecureRequest(req) {
   const config = getSecurityConfig();
@@ -43,46 +59,36 @@ export function validateSecureRequest(req) {
   const protocolHeader = getHeaderValue(req, config.protocolHeaderName);
   const apiKeyHeader = getHeaderValue(req, config.requestApiKeyHeaderName);
 
+	// API key check blocks unauthorized callers before any expensive crypto/database processing.
   if (config.requireRequestApiKey) {
 	if (!apiKeyHeader || apiKeyHeader !== config.requestApiKey) {
-	  return buildResult(false, 'bridgeUnauthorizedCaller', 'Missing or invalid API key header.', {
-		correlationId: correlationIdHeader
-	  });
+	  return fail(correlationIdHeader, 'bridgeUnauthorizedCaller', 'Missing or invalid API key header.');
 	}
   }
 
 	if (!protocolHeader || protocolHeader !== config.secureProtocolVersion) {
-	return buildResult(false, 'unsupportedProtocol', 'Header protocol version is missing or unsupported.', {
-	  correlationId: correlationIdHeader
-	});
+	return fail(correlationIdHeader, 'unsupportedProtocol', 'Header protocol version is missing or unsupported.');
   }
 
   const envelope = req.body;
   if (!envelope || typeof envelope !== 'object' || Array.isArray(envelope)) {
-	return buildResult(false, 'secureEnvelopeInvalid', 'Request body must be a JSON object.', {
-	  correlationId: correlationIdHeader
-	});
+	return fail(correlationIdHeader, 'secureEnvelopeInvalid', 'Request body must be a JSON object.');
   }
 
+	// Required field list comes from securityConfig so contract changes stay centralized.
   for (const fieldName of config.requiredEnvelopeFields) {
 	const value = envelope[fieldName];
 	if (typeof value !== 'string' || value.trim().length === 0) {
-	  return buildResult(false, 'secureEnvelopeInvalid', `Envelope field '${fieldName}' is required.`, {
-		correlationId: correlationIdHeader
-	  });
+	  return fail(correlationIdHeader, 'secureEnvelopeInvalid', `Envelope field '${fieldName}' is required.`);
 	}
   }
 
 	if (envelope.protocolVersion !== config.secureProtocolVersion) {
-	return buildResult(false, 'unsupportedProtocol', 'Envelope protocolVersion is unsupported.', {
-	  correlationId: correlationIdHeader
-	});
+	return fail(correlationIdHeader, 'unsupportedProtocol', 'Envelope protocolVersion is unsupported.');
   }
 
   if (!isIsoDate(envelope.timestampUtc)) {
-	return buildResult(false, 'secureEnvelopeInvalid', "Envelope field 'timestampUtc' must be a valid ISO timestamp.", {
-	  correlationId: correlationIdHeader
-	});
+	return fail(correlationIdHeader, 'secureEnvelopeInvalid', "Envelope field 'timestampUtc' must be a valid ISO timestamp.");
   }
 
   const nowUtc = new Date();
@@ -91,28 +97,23 @@ export function validateSecureRequest(req) {
   const skewMs = Math.abs(nowUtc.getTime() - requestUtc.getTime());
 
   if (skewMs > maxSkewMs) {
-	return buildResult(false, 'requestExpired', 'Request timestamp is outside allowed clock skew window.', {
-	  correlationId: correlationIdHeader
-	});
+	return fail(correlationIdHeader, 'requestExpired', 'Request timestamp is outside allowed clock skew window.');
   }
 
+	// Best-effort cleanup keeps replay table bounded without an external scheduler.
   purgeExpiredReplayEntries(nowUtc.toISOString());
 
   const clientId = envelope.clientId;
   const requestId = envelope.requestId;
 
+	// Replay uniqueness is enforced by clientId + requestId pair (durable anti-replay requirement).
   if (existsReplay(clientId, requestId)) {
-	return buildResult(false, 'requestReplayed', 'Duplicate request for clientId/requestId.', {
-	  correlationId: correlationIdHeader
-	});
+	return fail(correlationIdHeader, 'requestReplayed', 'Duplicate request for clientId/requestId.');
   }
 
   const expiresAtUtc = addSeconds(nowUtc, config.replayTtlSeconds);
+	// Register replay marker before crypto/business processing to reduce race windows.
   registerReplay(clientId, requestId, envelope.timestampUtc, nowUtc.toISOString(), expiresAtUtc.toISOString());
 
-  return buildResult(true, null, null, {
-	correlationId: correlationIdHeader,
-	envelope,
-	protocolVersion: config.secureProtocolVersion
-  });
+	return success(correlationIdHeader, envelope, config.secureProtocolVersion);
 }

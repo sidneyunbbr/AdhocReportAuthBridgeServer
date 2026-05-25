@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "createdAtUtc": "2026-05-25T18:50:39.887Z",
+  "encryptionKeys": [
+    {
+      "keyId": "enc-dev-2026-05",
+      "status": "active",
+      "privateKeyPem": "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VuBCIEIIBLs0m8N3fXTdj0SOngMLRgYt6cvY5YHoge5z6pRAxK\n-----END PRIVATE KEY-----\n",
+      "publicKey": "ovZtPV5S-hlgC21yY1wDDkJv0B4WPRl4Jxcb3jUIEhQ",
+      "notBeforeUtc": "2026-05-24T18:50:39.886Z",
+      "notAfterUtc": "2026-11-21T18:50:39.886Z"
+    },
+    {
+      "keyId": "enc-dev-2026-04",
+      "status": "previous",
+      "privateKeyPem": "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VuBCIEIJj5vD7WWhJCNCcTjtFERrOf3roy+j14YefLnbTv8Rlv\n-----END PRIVATE KEY-----\n",
+      "publicKey": "p-ziGHoyJxC7OUZGaLWlv02I_05nbpBTd3lp6ObXf2g",
+      "notBeforeUtc": "2025-05-25T18:50:39.886Z",
+      "notAfterUtc": "2026-06-01T18:50:39.886Z"
+    }
+  ],
+  "serverSignatureKeys": [
+    {
+      "keyId": "bridge-sig-dev-2026-05",
+      "status": "active",
+      "privateKeyPem": "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIIGYfLcEdYFH14d8v0iK7dhRtFILSfe5rjmGpAy9A2ZC\n-----END PRIVATE KEY-----\n",
+      "publicKey": "Ss180kqDky69ddlD2FwhT3FpbBDVKhkb0LVdtU_lEJ4"
+    },
+    {
+      "keyId": "bridge-sig-dev-2026-04",
+      "status": "previous",
+      "privateKeyPem": "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIKJJeAsirmPq4LNOafoA8xTeiUvEI9P+fDIXAO/0+9ee\n-----END PRIVATE KEY-----\n",
+      "publicKey": "lQ7CD0DJBdL_2oULN12ywqFbXmrQHQem8YqKd611Syg"
+    }
+  ],
+  "clientSigningKeys": [
+    {
+      "keyId": "client-sig-2026-05",
+      "status": "active",
+      "privateKeyPem": "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIAkonyIjfHq2LjgohM1/wxE21F2Q6OdRb48UsfxhT2KO\n-----END PRIVATE KEY-----\n",
+      "publicKey": "STGHZ_BWRohzKFMEbxNafIZBYu1Bfxo6-2wU2_b4vaY"
+    }
+  ]
+}

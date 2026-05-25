@@ -27,6 +27,8 @@ Use the same secret value on both sides.
 
 ### In AdhocReport (caller)
 - Configure the value in AdhocReport AuthBridge settings (appsettings/environment) for request API key usage.
+- At this stage, apply the same shared key in AdhocReport `appsettings` so caller and receiver use the exact same secret.
+- Future improvement: move this caller-side secret to environment/secure secret storage as standard deployment practice.
 
 ### In customer authorization server (receiver)
 - Configure environment variable:
@@ -60,6 +62,7 @@ $env:AUTHBRIDGE_SECURE_PROTOCOL_VERSION="2.0"
 ### 4) (Optional) reset and reseed shared test data
 ```powershell
 $env:AUTHBRIDGE_RESET_SHARED_DATA_ON_START="true"
+npm run reseed-data
 ```
 
 ### 5) Run server
@@ -71,6 +74,12 @@ npm run start
 ```powershell
 Invoke-WebRequest -Uri "http://localhost:3000/api/external-auth/health" -Method Get
 Invoke-WebRequest -Uri "http://localhost:3000/api/external-auth/keys" -Method Get
+```
+
+### 7) Run secure round-trip example and conformance tests
+```powershell
+node examples/secure-roundtrip-client.js
+npm run test:conformance
 ```
 
 After one startup with reset enabled, set this variable back to false (or remove it) to avoid wiping data on every run.

@@ -2,6 +2,13 @@
 
 This directory contains the JavaScript reference implementation of the external authorization server contract used by AdhocReport.
 
+## Critical security note about password validation
+
+- **Step 1 (shared/common):** this server applies the AuthBridge secure-envelope decryption flow and obtains `payload.password` in memory.
+- **Step 2 (customer-specific):** customer implementation must apply its own local credential method (hash/verify/rehash flow) against its real user store.
+- The current plaintext comparison in `server/src/services/authDecisionService.js` is **demo-only** and exists only to keep interoperability tests reproducible.
+- Therefore, `server/src/data/sqlite.js` keeps `password_plain` only as a local reference dataset for tests/examples.
+
 ## Should we create this README now or only when everything is done?
 
 Recommendation: **create now and keep it versioned from the beginning**.
@@ -49,6 +56,7 @@ You are right that line numbers require maintenance. This README is intentionall
 ### 3) Business authentication decision (main customization point)
 
 - **File:** `server/src/services/authDecisionService.js`
+- **Primary function to customize:** `evaluateAuthenticationPayload(decryptedPayload)`
 - **Lines:**
 	- `82-108` (decrypted payload validation)
   - `110-132` (authentication decision and contract business payload)
@@ -56,6 +64,9 @@ You are right that line numbers require maintenance. This README is intentionall
   - user lookup and credential validation logic
   - account status checks
   - additional authorization rules / claims composition
+- **Important:**
+	- keep Step 1 (AuthBridge decrypt) unchanged and replace only Step 2 with customer local hash verification flow.
+  - in practice, most customer changes are inside `evaluateAuthenticationPayload(...)` and helper methods it calls.
 - **Why it matters:**
 	- This module is intentionally isolated from crypto plumbing so customers can replace business logic without breaking transport security.
 
@@ -147,6 +158,7 @@ You are right that line numbers require maintenance. This README is intentionall
 - **Lines:** `8-12`
 - **What customer usually adapts:**
   - seed users and reset strategy for local/test environments
+  - replace demo plaintext password storage with hashed credential storage in production
 
 ---
 

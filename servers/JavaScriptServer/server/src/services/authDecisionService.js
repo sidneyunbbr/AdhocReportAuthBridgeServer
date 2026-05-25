@@ -3,6 +3,10 @@
  * Encapsulates decrypted payload validation and authentication business decision logic.
  * This keeps secureValidationService focused on protocol/signature/crypto orchestration,
  * while this module is the primary customization point for customer identity rules.
+   * IMPORTANT: AuthBridge transport decryption is the shared/common step across integrations.
+ * After decrypting payload.password, customer implementations must apply their own
+ * local password hashing/verification method against their real user store.
+ * This reference implementation compares plaintext password for demo only.
  */
 import { findExternalAuthUserByExternalId, findExternalAuthUserByUsername } from '../data/sqlite.js';
 
@@ -125,6 +129,9 @@ export function evaluateAuthenticationPayload(decryptedPayload) {
   }
 
   if (user.password !== payloadValidation.password) {
+	// Step 1 (shared): payload.password was already decrypted by AuthBridge secure flow.
+	// Step 2 (customer-specific): replace this demo comparison with local hash verification
+	// against the customer's own credential store.
 	return buildValidEvaluation(buildFailurePayload('Authentication failed.', 'invalid-credentials'));
   }
 

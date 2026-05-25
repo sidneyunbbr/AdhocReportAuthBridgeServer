@@ -45,6 +45,7 @@ function createSchema() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       username TEXT,
       external_user_id TEXT,
+      -- Demo-only column. In customer systems, store hashed password instead.
       password_plain TEXT NOT NULL,
       email TEXT,
       full_name TEXT,
@@ -68,6 +69,8 @@ function resetDataIfRequested() {
 }
 
 // Seeds sample users expected by docs/examples/conformance tests.
+// Passwords here are plaintext for demo reproducibility only.
+// Customer implementations must store/verify hashed credentials in their own user repository.
 function seedExternalUsersIfEmpty() {
   const countRow = db.prepare('SELECT COUNT(1) AS count FROM external_auth_users;').get();
   if ((countRow?.count ?? 0) > 0) {
@@ -84,19 +87,35 @@ function seedExternalUsersIfEmpty() {
       is_enabled: 1
     },
     {
-      username: 'manuela',
+      username: 'external.alpha',
       external_user_id: 'external-user-002',
-      password_plain: 'manuela.pass',
-      email: 'manuela@example.com',
-      full_name: 'Manuela',
+      password_plain: 'external.alpha.pass',
+      email: 'external.alpha@example.com',
+      full_name: 'External Alpha',
       is_enabled: 1
     },
     {
-      username: 'magda',
+      username: 'external.beta',
       external_user_id: 'external-user-003',
-      password_plain: 'magda.pass',
-      email: 'magda@example.com',
-      full_name: 'Magda',
+      password_plain: 'external.beta.pass',
+      email: 'external.beta@example.com',
+      full_name: 'External Beta',
+      is_enabled: 1
+    },
+    {
+      username: 'external.gamma',
+      external_user_id: 'external-user-004',
+      password_plain: 'external.gamma.pass',
+      email: 'external.gamma@example.com',
+      full_name: 'External Gamma',
+      is_enabled: 1
+    },
+    {
+      username: 'external.delta',
+      external_user_id: 'external-user-005',
+      password_plain: 'external.delta.pass',
+      email: 'external.delta@example.com',
+      full_name: 'External Delta',
       is_enabled: 1
     }
   ];

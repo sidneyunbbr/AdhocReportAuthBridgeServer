@@ -24,6 +24,14 @@ function parseNumber(value, fallback) {
 }
 
 // Centralized security policy used by request validators and routes.
+// This is the single point where AUTHBRIDGE_* environment variables are read and applied.
+// In the current simplified phase, missing variables do not block startup because fallbacks are used.
+// Clients can choose one of two paths:
+// 1) Define environment variables in the Node.js host to align with caller applications; or
+// 2) Keep variables undefined and adjust fallback values in this function to match their ecosystem defaults.
+// For API key flow specifically:
+// - AUTHBRIDGE_REQUEST_API_KEY_HEADER_NAME falls back to 'x-bridge-api-key'.
+// - AUTHBRIDGE_REQUEST_API_KEY falls back to '' (empty), which allows startup but can deny requests when API key enforcement is enabled.
 export function getSecurityConfig() {
   return {
 	protocolVersion: process.env.AUTHBRIDGE_PROTOCOL_VERSION || DEFAULT_PROTOCOL_VERSION,

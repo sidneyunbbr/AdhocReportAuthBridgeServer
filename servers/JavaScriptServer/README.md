@@ -9,6 +9,13 @@ This directory contains the JavaScript reference implementation of the external 
 - The current plaintext comparison in `server/src/services/authDecisionService.js` is **demo-only** and exists only to keep interoperability tests reproducible.
 - Therefore, `server/src/data/sqlite.js` keeps `password_plain` only as a local reference dataset for tests/examples.
 
+## Header configuration note (`X-Bridge-Api-Key` vs `X-Api-Key`)
+
+- This JavaScript server validates request API key using header **`X-Bridge-Api-Key`** by default.
+- Header name is configured in `server/src/config/securityConfig.js` via `requestApiKeyHeaderName` (`AUTHBRIDGE_REQUEST_API_KEY_HEADER_NAME`).
+- `X-Api-Key` is not the default request header for this server in this integration flow.
+- If your AdhocReport.AuthBridge.Api contains `ApiKeyHeaderName` (for example `X-Api-Key`), treat it as a downstream-call setting, separate from the receiver-side request header used here.
+
 ## Should we create this README now or only when everything is done?
 
 Recommendation: **create now and keep it versioned from the beginning**.
@@ -185,6 +192,41 @@ You are right that line numbers require maintenance. This README is intentionall
   - `252-293` valid secure round-trip
 - **What customer usually adapts:**
   - extend with tenant-specific scenarios, but keep baseline tests.
+
+---
+
+## Cross-component alignment checklist (ServerApp -> AuthBridge.Api -> JavaScriptServer)
+
+Use this checklist before E2E login tests.
+
+| Item to align | Where to verify | Expected value/pattern |
+|---|---|---|
+| ServerApp -> AuthBridge.Api base URL | `scr/App/Presentation/AdhocReport.Web.UI/AdhocReport.ServerApp/appsettings.json` -> `AuthBridge:BaseUrl` | Must point to running `AdhocReport.AuthBridge.Api` URL |
+| ServerApp -> AuthBridge.Api endpoint | `scr/App/Presentation/AdhocReport.Web.UI/AdhocReport.ServerApp/appsettings.json` -> `AuthBridge:ValidateEndpoint` | Must match API mapped route (default: `api/external-auth/validate`) |
+| ServerApp external auth enabled | `scr/App/Presentation/AdhocReport.Web.UI/AdhocReport.ServerApp/appsettings.json` -> `AuthBridge:Enabled` | `true` for bridge-based login tests |
+| ServerApp request API key header | `scr/App/Presentation/AdhocReport.Web.UI/AdhocReport.ServerApp/appsettings.json` -> `AuthBridge:ApiKeyHeaderName` | Keep aligned with API request-header validation (default: `X-Bridge-Api-Key`) |
+| ServerApp request API key value | `scr/App/Presentation/AdhocReport.Web.UI/AdhocReport.ServerApp/appsettings.json` -> `AuthBridge:ApiKey` | Must equal AuthBridge.Api `AuthBridgeValidation:RequestApiKey` when request key enforcement is enabled |
+| AuthBridge.Api request API key validation | `scr/App/Presentation/AdhocReport.AuthBridge.Api/appsettings.json` -> `AuthBridgeValidation:RequireRequestApiKey`, `RequestApiKey`, `RequestApiKeyHeaderName` | If `RequireRequestApiKey=true`, header/value must match caller |
+| AuthBridge.Api -> downstream URL (optional mode) | `scr/App/Presentation/AdhocReport.AuthBridge.Api/appsettings.json` -> `AuthBridgeValidation:DownstreamAuth:Enabled`, `ValidateUrl` | If enabled, must point to the intended downstream validator URL |
+| Header context distinction | Same API file: `RequestApiKeyHeaderName` vs `DownstreamAuth:ApiKeyHeaderName` | `RequestApiKeyHeaderName` = receiver-side incoming header; `DownstreamAuth:ApiKeyHeaderName` = outbound downstream call header |
+| JavaScriptServer request API key value | Node env: `AUTHBRIDGE_REQUEST_API_KEY` | Must match caller side shared secret for receiver validation |
+| JavaScriptServer request API key header | Node env: `AUTHBRIDGE_REQUEST_API_KEY_HEADER_NAME` (or default) | Default is `X-Bridge-Api-Key`; keep aligned with sender |
+| JavaScriptServer secure protocol version | Node env: `AUTHBRIDGE_SECURE_PROTOCOL_VERSION` | Keep identical between secure request sender and receiver for `/validate-secure` flow |
+
+### Fast runtime diagnostics
+
+- AuthBridge.Api health/config snapshot:
+  - `GET /api/external-auth/health` (shows request API key/header flags and downstream status)
+- JavaScriptServer health:
+  - `GET /api/external-auth/health`
+- JavaScriptServer key/protocol discovery:
+  - `GET /api/external-auth/keys`
+
+### Common mismatch symptoms
+
+- `401 bridge-unauthorized-caller`: usually API key value/header mismatch.
+- `422 unsupported-protocol` (secure flow): protocol/version mismatch.
+- `401 validation-failed` or fallback denial: downstream URL/fallback policy/local-user mismatch.
 
 ---
 

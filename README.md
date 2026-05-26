@@ -40,6 +40,11 @@ Use the same secret value on both sides.
 - Default header name is `X-Bridge-Api-Key`.
 - If needed, override header name in the server with `AUTHBRIDGE_REQUEST_API_KEY_HEADER_NAME`.
 
+### Important header distinction (`X-Bridge-Api-Key` vs `X-Api-Key`)
+- `X-Bridge-Api-Key` is the header validated by this JavaScript customer server (`AUTHBRIDGE_REQUEST_API_KEY_HEADER_NAME`).
+- `X-Api-Key` is not the default header for this JavaScript server in the current flow.
+- In AdhocReport.AuthBridge.Api, `ApiKeyHeaderName` (often `X-Api-Key`) belongs to downstream API calls configuration and is a different concern from `RequestApiKeyHeaderName`.
+
 ## Quick local setup (PowerShell)
 
 ### 1) Open JavaScript server folder

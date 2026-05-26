@@ -21,6 +21,10 @@ Use the exact same value in both systems.
 Default header name expected by this JavaScript server:
 - `X-Bridge-Api-Key`
 
+Header distinction for AdhocReport.AuthBridge.Api users:
+- `RequestApiKeyHeaderName` must map to the receiver-side header used here (default `X-Bridge-Api-Key`).
+- `ApiKeyHeaderName` (commonly `X-Api-Key`) is typically used for downstream API calls and is a separate configuration concern.
+
 Optional customization:
 - `AUTHBRIDGE_REQUEST_API_KEY_HEADER_NAME` can change header name when needed.
 

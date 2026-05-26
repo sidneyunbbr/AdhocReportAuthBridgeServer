@@ -15,7 +15,7 @@ export function createApp() {
   app.use(express.urlencoded({ extended: false }));
 
 	// AuthBridge contract surface for external authentication.
-  app.use('/api/external-auth', externalAuthRouter);
+	app.use('/api/external-auth', externalAuthRouter);
 
 	// Default not found response for unsupported paths.
   app.use((req, res) => {
